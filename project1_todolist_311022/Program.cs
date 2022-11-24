@@ -253,6 +253,18 @@ void updateTask()
 
                 }
             }
+            else if (editChoice.Equals("2"))
+            {
+                //code for changing the duedate
+            }
+            else if (editChoice.Equals("3"))
+            {
+                //code for changing the project name
+            }
+            else
+            {
+                Console.WriteLine("You can only use option 1, 2 and 3");
+            }
 
             break;
             
