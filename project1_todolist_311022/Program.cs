@@ -18,6 +18,7 @@ string title = "Title";
 string duedate = "Duedate";
 string status = "Status";
 string project = "Project";
+string nr = "Nr";
 
 int spacing = 15;
 
@@ -28,7 +29,7 @@ while (isRunning)
     "Pick an option:\n" +
     "(1) Show Task List (by date or project)\n" +
     "(2) Add new Task\n" +
-    "(3) Edit Test (update, mark as done, remove)\n" +
+    "(3) Edit Project/Task (update, mark as done, remove)\n" +
     "(4) Save and Quit\n");
     string choice = Console.ReadLine();
 
@@ -119,7 +120,7 @@ void viewTasks()
                     Console.ForegroundColor = ConsoleColor.Yellow;
                 }
 
-                if (task.status.Equals("Done"))
+                if (task.status.Equals("DONE"))
                 {
                     Console.ForegroundColor = ConsoleColor.Green;
                 }
@@ -208,13 +209,17 @@ void createTask()
 void updateTask()
 {
     Console.WriteLine("select the number of the task you want to change");
-    Console.WriteLine("Title DueDate Status Project");
+    Console.WriteLine(nr.PadRight(4) + " " + title.PadRight(spacing) + " " + duedate.PadRight(spacing) + " " +
+           status.PadRight(spacing) + " " + project.PadRight(spacing) + "\n" +
+           nr.Replace(nr,"--").PadRight(4) + " " + title.Replace(title, "----- ").PadRight(spacing) + duedate.Replace(duedate, " ------- ").PadRight(spacing) +
+           status.Replace(status, "  ------").PadRight(spacing) + project.Replace(project, "   -------").PadRight(spacing) + "\n");
     for (int i = 0; i < tasks.Count; i++)
     {
-        Console.WriteLine("("+(i+1)+") " + tasks[i].title + " " + tasks[i].dueDate + " " + tasks[i].status + " " + tasks[i].project);
+        Console.WriteLine("("+(i+1)+")  " + tasks[i].title.PadRight(spacing) + " " + tasks[i].dueDate.ToString("dd/MM/yyyy").PadRight(spacing) +
+            " " + tasks[i].status.PadRight(spacing) + " " + tasks[i].project.PadRight(spacing));
     }
 
-    Console.WriteLine("select the task you want to update: ");
+    Console.Write("\nselect the task you want to update: ");
     int taskChoice = int.Parse(Console.ReadLine());
     taskChoice--;
 
@@ -237,6 +242,7 @@ void updateTask()
 
             if (editChoice.Equals("1"))
             {
+                //code for changing the title
                 Console.WriteLine("New title for Project: " + tasks[taskChoice].project + "\nWith Title: " + tasks[taskChoice].title);
                 string newTitle = Console.ReadLine();
 
@@ -256,10 +262,41 @@ void updateTask()
             else if (editChoice.Equals("2"))
             {
                 //code for changing the duedate
+                Console.WriteLine("New Duedate for Project: " + tasks[taskChoice].project + "\nWith Title: " + tasks[taskChoice].title);
+                string duedate = Console.ReadLine();
+                DateTime date = Convert.ToDateTime(duedate);
+
+                Console.WriteLine("new Duedate is: " + date + "\nif you regrett this choice press Q else press ENTER");
+                if (Console.ReadLine().ToUpper().Equals("Q"))
+                {
+
+                    break;
+                }
+                else
+                {
+                    tasks[taskChoice].dueDate = date;
+
+                }
+
             }
             else if (editChoice.Equals("3"))
             {
                 //code for changing the project name
+                Console.WriteLine("New Project name for Project: " + tasks[taskChoice].project + "\nWith Title: " + tasks[taskChoice].title);
+                string newProjectName = Console.ReadLine();
+
+                Console.WriteLine("new Project name is: " + newProjectName + "\nif you regrett this choice press Q else press ENTER");
+
+                if (Console.ReadLine().ToUpper().Equals("Q"))
+                {
+
+                    break;
+                }
+                else
+                {
+                    tasks[taskChoice].project = newProjectName;
+
+                }
             }
             else
             {
@@ -269,9 +306,41 @@ void updateTask()
             break;
             
         case "2":
+            //code for marking a task as done
+
+            Console.WriteLine("Do you want to mark Project: " + tasks[taskChoice].project + " With Title: " + tasks[taskChoice].title + " as done?\n" +
+                "Y/N");
+            string yesNo = Console.ReadLine().ToUpper().Trim().Remove(1);
+
+            if (yesNo.Equals("Y"))
+            {
+                tasks[taskChoice].status = "DONE";
+            } else
+            {
+                break;
+            }
+
+
+
             break;
         
         case "3":
+            //code for removing a task
+
+            Console.WriteLine("Do you want to remove Project: " + tasks[taskChoice].project + " With Title: " + tasks[taskChoice].title + "?\n" +
+                " (WARNING YOU CAN NOT UNDO THIS ACTION OF REMOVAL)" +
+                "Y/N");
+
+            yesNo = Console.ReadLine().ToUpper().Trim().Remove(1);
+            if (yesNo.Equals("Y"))
+            {
+                tasks.RemoveAt(taskChoice);
+               
+            }
+            else
+            {
+                break;
+            }
             break;
     }
     
