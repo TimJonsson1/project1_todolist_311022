@@ -1,18 +1,21 @@
 ﻿
 using project1_todolist_311022;
 using System.Collections;
+using System.IO;
 using System.Linq;
+using static System.Net.Mime.MediaTypeNames;
+using System.Runtime.Serialization;
+using System.Xml;
 
-bool isRunning = true;
 List<Todolist> tasks = new List<Todolist>();
 
-tasks.Add(new Todolist("ToDo",new DateTime(2023,04,20),"not done","April Project"));
-tasks.Add(new Todolist("Other", new DateTime(2022,11,26), "not done", "November Project"));
-tasks.Add(new Todolist("A Letter", new DateTime(2022, 12, 08), "not done", "Aplha Project"));
-tasks.Add(new Todolist("B Letter", new DateTime(2023, 05, 01), "not done", "Alpha Project"));
-tasks.Add(new Todolist("C Letter", new DateTime(2022, 04, 15), "not done", "Aplha Project"));
-tasks.Add(new Todolist("D Letter", new DateTime(2022, 01, 01), "DONE", "Alpha Project"));
-// replace X and Y with amount later when you can read a file
+//tasks.Add(new Todolist("ToDo", new DateTime(2023, 04, 20), "not done", "April Project"));
+//tasks.Add(new Todolist("Other", new DateTime(2022, 11, 26), "not done", "November Project"));
+//tasks.Add(new Todolist("A Letter", new DateTime(2022, 12, 08), "not done", "Aplha Project"));
+//tasks.Add(new Todolist("B Letter", new DateTime(2023, 05, 01), "not done", "Alpha Project"));
+//tasks.Add(new Todolist("C Letter", new DateTime(2022, 04, 15), "not done", "Aplha Project"));
+//tasks.Add(new Todolist("D Letter", new DateTime(2022, 01, 01), "DONE", "Alpha Project"));
+
 
 string title = "Title";
 string duedate = "Duedate";
@@ -21,6 +24,71 @@ string project = "Project";
 string nr = "Nr";
 
 int spacing = 15;
+bool isRunning = true;
+string filePath = "C:\\Users\\TimJo\\source\\project1_todolist_311022\\project1_todolist_311022\\TextFile1.txt";
+
+//string writeText = "Hello World";
+//File.WriteAllText("listfile.txt", writeText);
+
+
+
+
+//code for loading the text file info back to class objects before loading the rest of the program 
+FileInfo fi = new FileInfo("C:\\Users\\TimJo\\source\\project1_todolist_311022\\project1_todolist_311022\\TextFile1.txt");
+FileStream fs = fi.Open(FileMode.OpenOrCreate, FileAccess.Read, FileShare.Read);
+StreamReader sr = new StreamReader(fs);
+string fileContent = sr.ReadToEnd();
+
+sr.Close();
+fs.Close();
+
+int count = 1;
+
+string[] words = fileContent.Split(' ');
+
+
+foreach (string word in words)
+{
+    
+
+    if (count == 1)
+    {
+        
+        title = word;
+    }
+
+    if (count == 2)
+    {
+        
+        duedate = word;
+    }
+
+    if(count == 3)
+    {
+        status = word;
+    }
+
+    //when the counter reached 4 it will reset to 1 so code will be executed to put all the info gathered into the class array and repeat until done
+    if (count == 4)
+    {
+        project = word;
+
+        tasks.Add(new Todolist(title, duedate, status, project));
+
+
+    }
+
+
+    count++;
+
+    if (count == 5)
+    {
+        count = 1;
+    }
+    
+
+}
+
 
 while (isRunning)
 {
@@ -38,13 +106,13 @@ while (isRunning)
         case "1":
             //view all the tasks
             viewTasks();
-            
+
             break;
 
         case "2":
             //creating a task
             createTask();
-            
+
 
             break;
 
@@ -55,7 +123,7 @@ while (isRunning)
 
         case "4":
             //quit the program
-            isRunning = false; 
+            isRunning = false;
             break;
 
 
@@ -85,11 +153,12 @@ void printOptions()
     "(4) Save and Quit\n");
 }
 
-
-
 void viewTasks()
 {
-
+    string title = "Title";
+    string duedate = "Duedate";
+    string status = "Status";
+    string project = "Project";
     DateTime dateNow = DateTime.Now;
 
     Console.WriteLine("(1) sort by date - closes to Duedate or late first\n" +
@@ -98,18 +167,23 @@ void viewTasks()
     string choice = Console.ReadLine();
     switch (choice)
     {
+        //code to show the list of tasks and projects and sorted by date
         case "1":
-
-            Console.WriteLine(title.PadRight(spacing) + " " + duedate.PadRight(spacing) + " " +
-           status.PadRight(spacing) + " " + project.PadRight(spacing) + "\n" +
-           title.Replace(title, "----- ").PadRight(spacing) + duedate.Replace(duedate, " ------- ").PadRight(spacing) +
-           status.Replace(status, "  ------").PadRight(spacing) + project.Replace(project, "   -------").PadRight(spacing) + "\n");
+            try
+            {
+                Console.WriteLine(title.PadRight(spacing) + " " + duedate.PadRight(spacing) + " " +
+               status.PadRight(spacing) + " " + project.PadRight(spacing) + "\n" +
+               title.Replace(title, "----- ").PadRight(spacing) + duedate.Replace(duedate, " ------- ").PadRight(spacing) +
+               status.Replace(status, "  ------").PadRight(spacing) + project.Replace(project, "   -------").PadRight(spacing) + "\n");
+            }catch(ArgumentException ae) { 
+            }
 
             List<Todolist> sortedTodoListByDate = tasks.OrderBy(date => date.dueDate).ToList();
 
             foreach (Todolist task in sortedTodoListByDate)
             {
-                TimeSpan diff = task.dueDate - dateNow;
+                DateTime tempDateTime = DateTime.Parse(task.dueDate);
+                TimeSpan diff = tempDateTime - dateNow;
                 
                 if(diff.Days < 10)
                 {
@@ -124,25 +198,33 @@ void viewTasks()
                 {
                     Console.ForegroundColor = ConsoleColor.Green;
                 }
-                Console.WriteLine(task.title.PadRight(spacing) + " " + task.dueDate.ToString("dd/MM/yyyy").PadRight(spacing) + " " + task.status.PadRight(spacing) + " " + task.project.PadRight(spacing) + "\n");
+                Console.WriteLine(task.title.PadRight(spacing) + " " + task.dueDate.PadRight(spacing) + " " + task.status.PadRight(spacing) + " " + task.project.PadRight(spacing) + "\n");
                 Console.ResetColor();
             }
 
             break;
                         
         case"2":
+            //code to show the list of tasks and projects and sorted by A-Z
 
-            Console.WriteLine(title.PadRight(spacing) + " " + duedate.PadRight(spacing) + " " +
-           status.PadRight(spacing) + " " + project.PadRight(spacing) + "\n" +
-           title.Replace(title, "----- ").PadRight(spacing) + duedate.Replace(duedate, " ------- ").PadRight(spacing) +
-           status.Replace(status, "  ------").PadRight(spacing) + project.Replace(project, "   -------").PadRight(spacing) + "\n");
+            try
+            {
+                Console.WriteLine(title.PadRight(spacing) + " " + duedate.PadRight(spacing) + " " +
+               status.PadRight(spacing) + " " + project.PadRight(spacing) + "\n" +
+               title.Replace(title, "----- ").PadRight(spacing) + duedate.Replace(duedate, " ------- ").PadRight(spacing) +
+               status.Replace(status, "  ------").PadRight(spacing) + project.Replace(project, "   -------").PadRight(spacing) + "\n");
+            }
+            catch (ArgumentException ae)
+            {
+
+            }
             
             List<Todolist> sortedTodoListByProject = tasks.OrderBy(project => project.project).ToList(); 
 
             foreach (Todolist task in sortedTodoListByProject)
             {
-
-                TimeSpan diff = task.dueDate - dateNow;
+                DateTime tempDateTime = DateTime.Parse(task.dueDate);
+                TimeSpan diff = tempDateTime - dateNow;
 
                 if (diff.Days < 10)
                 {
@@ -158,7 +240,7 @@ void viewTasks()
                     Console.ForegroundColor = ConsoleColor.Green;
                 }
 
-                Console.WriteLine(task.title.PadRight(spacing) + " " + task.dueDate.ToString("dd/MM/yyyy").PadRight(spacing) + " " + task.status.PadRight(spacing) + " " + task.project.PadRight(spacing) + "\n");
+                Console.WriteLine(task.title.PadRight(spacing) + " " + task.dueDate.PadRight(spacing) + " " + task.status.PadRight(spacing) + " " + task.project.PadRight(spacing) + "\n");
                 Console.ResetColor();
             }
 
@@ -180,15 +262,13 @@ void viewTasks()
 
 void createTask()
 {
-    //Todolist task1 = new Todolist("Title","duedate","Status","Project");
-    //tasks.Add(task1);
+    //code to create a task by adding title, duedate, status(automatic if left empty) and the project name
     
     Console.Write("Add title: ");
     string title = Console.ReadLine();
     
     Console.Write("Add duedate (dd/mm/yyyy): ");
     string duedate = Console.ReadLine();
-    DateTime date = Convert.ToDateTime(duedate);
     
     Console.Write("Add Status(blank = not done): ");
     string status = Console.ReadLine().ToUpper();
@@ -200,14 +280,23 @@ void createTask()
     Console.Write("Name of project project: ");
     string project = Console.ReadLine();
 
-    Todolist task = new Todolist(title, date, status, project);
+    Todolist task = new Todolist(title, duedate, status, project);
     tasks.Add(task);
+
+    foreach (var toFile in tasks)
+    {
+        string stringToFile = toFile.title.Replace(" ","-").Trim() + " " + toFile.dueDate.Trim() + " " +
+            toFile.status.Replace(" ", "-").Trim() + " " + toFile.project.Replace(" ", "-").Trim();
+        File.AppendAllLines("C:\\Users\\TimJo\\source\\project1_todolist_311022\\project1_todolist_311022\\TextFile1.txt",
+            stringToFile.Split(Environment.NewLine.ToString()).ToList<string>());
+    }
 
 
 }
 
 void updateTask()
 {
+    //code to uppdate a task 
     Console.WriteLine("select the number of the task you want to change");
     Console.WriteLine(nr.PadRight(4) + " " + title.PadRight(spacing) + " " + duedate.PadRight(spacing) + " " +
            status.PadRight(spacing) + " " + project.PadRight(spacing) + "\n" +
@@ -215,7 +304,7 @@ void updateTask()
            status.Replace(status, "  ------").PadRight(spacing) + project.Replace(project, "   -------").PadRight(spacing) + "\n");
     for (int i = 0; i < tasks.Count; i++)
     {
-        Console.WriteLine("("+(i+1)+")  " + tasks[i].title.PadRight(spacing) + " " + tasks[i].dueDate.ToString("dd/MM/yyyy").PadRight(spacing) +
+        Console.WriteLine("("+(i+1)+")  " + tasks[i].title.PadRight(spacing) + " " + tasks[i].dueDate.PadRight(spacing) +
             " " + tasks[i].status.PadRight(spacing) + " " + tasks[i].project.PadRight(spacing));
     }
 
@@ -231,6 +320,7 @@ void updateTask()
 
     switch (choice)
     {
+        //Code to edit the taks by changing title, duedate or the project name
         case "1":
 
             Console.WriteLine("\nwhat do you want to edit?\n" +
@@ -264,9 +354,9 @@ void updateTask()
                 //code for changing the duedate
                 Console.WriteLine("New Duedate for Project: " + tasks[taskChoice].project + "\nWith Title: " + tasks[taskChoice].title);
                 string duedate = Console.ReadLine();
-                DateTime date = Convert.ToDateTime(duedate);
+                
 
-                Console.WriteLine("new Duedate is: " + date + "\nif you regrett this choice press Q else press ENTER");
+                Console.WriteLine("new Duedate is: " + duedate + "\nif you regrett this choice press Q else press ENTER");
                 if (Console.ReadLine().ToUpper().Equals("Q"))
                 {
 
@@ -274,7 +364,7 @@ void updateTask()
                 }
                 else
                 {
-                    tasks[taskChoice].dueDate = date;
+                    tasks[taskChoice].dueDate = duedate;
 
                 }
 
@@ -345,5 +435,4 @@ void updateTask()
     }
     
 }
-
 

@@ -6,9 +6,10 @@ using System.Threading.Tasks;
 
 namespace project1_todolist_311022
 {
+    
     internal class Todolist
     {
-        public Todolist(string title, DateTime dueDate, string status, string project)
+        public Todolist(string title, string dueDate, string status, string project)
         {
             this.title = title;
             this.dueDate = dueDate;
@@ -17,7 +18,7 @@ namespace project1_todolist_311022
         }
 
         public string title { get; set; }
-        public DateTime dueDate { get; set; }
+        public string dueDate { get; set; }
         public string status { get; set; }
         public string project { get; set; }
 
