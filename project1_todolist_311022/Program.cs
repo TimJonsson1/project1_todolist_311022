@@ -6,16 +6,11 @@ using System.Linq;
 using static System.Net.Mime.MediaTypeNames;
 using System.Runtime.Serialization;
 using System.Xml;
+using System.Threading.Tasks;
 
 List<Todolist> tasks = new List<Todolist>();
 
 //tasks.Add(new Todolist("ToDo", new DateTime(2023, 04, 20), "not done", "April Project"));
-//tasks.Add(new Todolist("Other", new DateTime(2022, 11, 26), "not done", "November Project"));
-//tasks.Add(new Todolist("A Letter", new DateTime(2022, 12, 08), "not done", "Aplha Project"));
-//tasks.Add(new Todolist("B Letter", new DateTime(2023, 05, 01), "not done", "Alpha Project"));
-//tasks.Add(new Todolist("C Letter", new DateTime(2022, 04, 15), "not done", "Aplha Project"));
-//tasks.Add(new Todolist("D Letter", new DateTime(2022, 01, 01), "DONE", "Alpha Project"));
-
 
 string title = "Title";
 string duedate = "Duedate";
@@ -29,8 +24,6 @@ string filePath = "C:\\Users\\TimJo\\source\\project1_todolist_311022\\project1_
 
 //string writeText = "Hello World";
 //File.WriteAllText("listfile.txt", writeText);
-
-
 
 
 //code for loading the text file info back to class objects before loading the rest of the program 
@@ -89,16 +82,31 @@ foreach (string word in words)
 
 }
 
+int tasksNotDone = 0;
+int tasksDone = 0;
 
 while (isRunning)
 {
+    foreach(var task in tasks)
+    {
+        if(task.status == "not-done")
+        {
+            tasksNotDone++;
+        }else if (task.status == "DONE")
+        {
+            tasksDone++;
+        }
+    }
     Console.WriteLine("Welcome to ToDoList \n" +
-    "You have X tasks todo and Y taskt are done!\n" +
+    "You have " + tasksNotDone + " tasks todo and " + tasksDone + " taskt are done!\n" +
     "Pick an option:\n" +
     "(1) Show Task List (by date or project)\n" +
     "(2) Add new Task\n" +
     "(3) Edit Project/Task (update, mark as done, remove)\n" +
     "(4) Save and Quit\n");
+    tasksDone = 0;
+    tasksNotDone = 0;
+
     string choice = Console.ReadLine();
 
     switch (choice)
@@ -161,7 +169,7 @@ void viewTasks()
     string project = "Project";
     DateTime dateNow = DateTime.Now;
 
-    Console.WriteLine("(1) sort by date - closes to Duedate or late first\n" +
+    Console.WriteLine("(1) sort by date\n" +
         "(2) sort by project A-Z");
 
     string choice = Console.ReadLine();
@@ -169,16 +177,14 @@ void viewTasks()
     {
         //code to show the list of tasks and projects and sorted by date
         case "1":
-            try
-            {
+            
                 Console.WriteLine(title.PadRight(spacing) + " " + duedate.PadRight(spacing) + " " +
                status.PadRight(spacing) + " " + project.PadRight(spacing) + "\n" +
                title.Replace(title, "----- ").PadRight(spacing) + duedate.Replace(duedate, " ------- ").PadRight(spacing) +
                status.Replace(status, "  ------").PadRight(spacing) + project.Replace(project, "   -------").PadRight(spacing) + "\n");
-            }catch(ArgumentException ae) { 
-            }
+            
 
-            List<Todolist> sortedTodoListByDate = tasks.OrderBy(date => date.dueDate).ToList();
+            List<Todolist> sortedTodoListByDate = tasks.OrderByDescending(date => date.dueDate).ToList();
 
             foreach (Todolist task in sortedTodoListByDate)
             {
@@ -283,13 +289,13 @@ void createTask()
     Todolist task = new Todolist(title, duedate, status, project);
     tasks.Add(task);
 
-    foreach (var toFile in tasks)
-    {
-        string stringToFile = toFile.title.Replace(" ","-").Trim() + " " + toFile.dueDate.Trim() + " " +
-            toFile.status.Replace(" ", "-").Trim() + " " + toFile.project.Replace(" ", "-").Trim();
-        File.AppendAllLines("C:\\Users\\TimJo\\source\\project1_todolist_311022\\project1_todolist_311022\\TextFile1.txt",
-            stringToFile.Split(Environment.NewLine.ToString()).ToList<string>());
-    }
+    
+        string stringToFile = task.title.Replace(" ","-").Trim() + " " + task.dueDate.Trim() + " " +
+            task.status.Replace(" ", "-").Trim() + " " + task.project.Replace(" ", "-").Trim() + " ";
+        File.AppendAllText("C:\\Users\\TimJo\\source\\project1_todolist_311022\\project1_todolist_311022\\TextFile1.txt", stringToFile);
+        //File.AppendAllLines("C:\\Users\\TimJo\\source\\project1_todolist_311022\\project1_todolist_311022\\TextFile1.txt",
+        //    stringToFile.Split(Environment.NewLine.ToString()).ToList<string>());
+   
 
 
 }
@@ -298,10 +304,7 @@ void updateTask()
 {
     //code to uppdate a task 
     Console.WriteLine("select the number of the task you want to change");
-    Console.WriteLine(nr.PadRight(4) + " " + title.PadRight(spacing) + " " + duedate.PadRight(spacing) + " " +
-           status.PadRight(spacing) + " " + project.PadRight(spacing) + "\n" +
-           nr.Replace(nr,"--").PadRight(4) + " " + title.Replace(title, "----- ").PadRight(spacing) + duedate.Replace(duedate, " ------- ").PadRight(spacing) +
-           status.Replace(status, "  ------").PadRight(spacing) + project.Replace(project, "   -------").PadRight(spacing) + "\n");
+    
     for (int i = 0; i < tasks.Count; i++)
     {
         Console.WriteLine("("+(i+1)+")  " + tasks[i].title.PadRight(spacing) + " " + tasks[i].dueDate.PadRight(spacing) +
@@ -346,8 +349,10 @@ void updateTask()
                 else
                 {
                     tasks[taskChoice].title = newTitle;
-
+                    updateTextFile();
                 }
+
+                
             }
             else if (editChoice.Equals("2"))
             {
@@ -365,6 +370,7 @@ void updateTask()
                 else
                 {
                     tasks[taskChoice].dueDate = duedate;
+                    updateTextFile();
 
                 }
 
@@ -385,6 +391,7 @@ void updateTask()
                 else
                 {
                     tasks[taskChoice].project = newProjectName;
+                    updateTextFile();
 
                 }
             }
@@ -405,6 +412,7 @@ void updateTask()
             if (yesNo.Equals("Y"))
             {
                 tasks[taskChoice].status = "DONE";
+                updateTextFile();
             } else
             {
                 break;
@@ -425,13 +433,25 @@ void updateTask()
             if (yesNo.Equals("Y"))
             {
                 tasks.RemoveAt(taskChoice);
-               
+                updateTextFile();
+
             }
             else
             {
                 break;
             }
             break;
+    }
+
+    void updateTextFile()
+    {
+        File.WriteAllText(filePath, "");
+        foreach (Todolist task in tasks)
+        {
+            string stringToFile = task.title.Replace(" ", "-").Trim() + " " + task.dueDate.Trim() + " " +
+            task.status.Replace(" ", "-").Trim() + " " + task.project.Replace(" ", "-").Trim() + " ";
+            File.AppendAllText(filePath, stringToFile);
+        }
     }
     
 }
